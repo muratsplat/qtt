@@ -5,7 +5,6 @@ package main
 // - https://github.com/eclipse/paho.mqtt.golang/blob/master/packets/packets.go#L58
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -39,6 +38,7 @@ func handleConnection(conn net.Conn) {
 		if err != nil {
 			if err == io.EOF {
 				conn.Close()
+				break
 			}
 
 			panic(err)
@@ -55,32 +55,48 @@ func handleConnection(conn net.Conn) {
 							unAuth := packets.NewControlPacket(packets.Connack)
 							ackPack := unAuth.(*packets.ConnackPacket)
 							ackPack.ReturnCode = packets.ErrRefusedNotAuthorised
-							fmt.Println(ackPack.String())
 							err := ackPack.Write(conn)
 							if err != nil {
 								log.Println(err)
 							}
-							if try >= 1 {
-								log.Println("Connection is closing")
-								conn.Close()
-								break
-							}
+							log.Printf("Client: %s is not authorized. ", v.ClientIdentifier)
 						}
+						break
+					}
 
+					session.Clients.List[v.ClientIdentifier] = session.NewSession(
+						v.ClientIdentifier,
+						conn,
+					)
+
+					ok := packets.NewControlPacket(packets.Connack)
+					ackPack := ok.(*packets.ConnackPacket)
+					ackPack.ReturnCode = packets.Accepted
+					err = ackPack.Write(conn)
+					if err != nil {
+						log.Println(err)
 						log.Println("Connection is closing")
 						conn.Close()
-
-						session.Clients.List[v.ClientIdentifier] = session.NewSession(
-							v.ClientIdentifier,
-							conn,
-						)
-						go session.Clients.List[v.ClientIdentifier].Run()
 					}
+
+					log.Printf("Client: %s is connected. ", v.ClientIdentifier)
+					session.Clients.List[v.ClientIdentifier].Run() // blocking
+
 				}
 			}
+
+			unAuth := packets.NewControlPacket(packets.Connack)
+			ackPack := unAuth.(*packets.ConnackPacket)
+			ackPack.ReturnCode = packets.ErrRefusedBadProtocolVersion
+			err := ackPack.Write(conn)
+			if err != nil {
+				log.Println(err)
+			}
+
+		default:
+			panic("Not handled logic")
 		}
 	}
-
 }
 
 var Auth auth.IAuth = &auth.Auth{}

@@ -2,6 +2,7 @@ package session
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"sync"
 
@@ -32,21 +33,15 @@ func (s *Session) Run() {
 		}
 
 		fmt.Println(packet.String())
-
-		// // Auth Handling
-		// if s.Auth == false {
-		// 	err := Clients.Auth.Check(s.User, s.Pass)
-		// 	if err != nil {
-		// 		unAuth := packets.NewControlPacket(packets.Connack)
-		// 		ackPack := unAuth.(*packets.ConnackPacket)
-		// 		ackPack.ReturnCode = packets.ErrRefusedBadUsernameOrPassword
-		// 		err := ackPack.Write(s.Conn)
-		// 		if err != nil {
-		// 			log.Println(err)
-		// 			log.Println("Connection is closing")
-		// 			s.Conn.Close()
-		// 		}
-		// 	}
+		unAuth := packets.NewControlPacket(packets.Connack)
+		ackPack := unAuth.(*packets.ConnackPacket)
+		ackPack.ReturnCode = packets.Accepted
+		err = ackPack.Write(s.Conn)
+		if err != nil {
+			log.Println(err)
+			log.Println("Connection is closing")
+			s.Conn.Close()
+		}
 
 		// }
 	}
