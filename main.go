@@ -8,11 +8,20 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"time"
 
 	"github.com/eclipse/paho.mqtt.golang/packets"
 	"github.com/muratsplat/qtt/auth"
 	"github.com/muratsplat/qtt/session"
 )
+
+var shutdown = make(chan os.Signal, 1)
+
+func init() {
+	signal.Notify(shutdown, os.Interrupt)
+}
 
 func main() {
 
@@ -20,6 +29,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		<-shutdown
+		time.Sleep(time.Second * 5)
+		log.Println("Server is shutdown...")
+		ln.Close()
+
+	}()
 
 	for {
 		conn, err := ln.Accept()
@@ -69,6 +86,7 @@ func handleConnection(conn net.Conn) {
 					session.Clients.List[v.ClientIdentifier] = session.NewSession(
 						v.ClientIdentifier,
 						conn,
+						shutdown,
 					)
 
 					ok := packets.NewControlPacket(packets.Connack)

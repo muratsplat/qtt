@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 	"sync"
 
 	"github.com/eclipse/paho.mqtt.golang/packets"
@@ -18,6 +19,7 @@ type Session struct {
 	sync.RWMutex
 	Done       bool
 	User, Pass string
+	Stop       chan os.Signal
 }
 
 type Connections struct {
@@ -27,8 +29,21 @@ type Connections struct {
 }
 
 func (s *Session) Run() {
+	var close os.Signal
+	go func() {
+		close = <-s.Stop
+		log.Printf("Forcing to close(%s) connection \n", s.ClientID)
+		s.Conn.Close()
+	}()
 	for {
-
+		if close != nil {
+			disconnect := packets.NewControlPacket(packets.Disconnect)
+			err := disconnect.Write(s.Conn)
+			if err != nil {
+				panic(err)
+			}
+			return
+		}
 		packet, err := packets.ReadPacket(s.Conn)
 		if err != nil {
 			if err == io.EOF {
@@ -45,11 +60,10 @@ func (s *Session) Run() {
 			pong.Write(s.Conn)
 			log.Printf("Sending pong request for  (%s) the connection \n", s.ClientID)
 			_ = v
+		case *packets.PublishPacket:
+			fmt.Println(string(v.Payload))
 
 		}
-
-		fmt.Println(packet.String())
-
 	}
 }
 
@@ -58,11 +72,12 @@ var Clients = &Connections{
 	Auth: &auth.Auth{},
 }
 
-func NewSession(clientID string, conn net.Conn) *Session {
+func NewSession(clientID string, conn net.Conn, stop chan os.Signal) *Session {
 	return &Session{
 		ClientID: clientID,
 		Conn:     conn,
 		Auth:     false,
 		Done:     false,
+		Stop:     stop,
 	}
 }
