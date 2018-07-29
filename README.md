@@ -11,8 +11,8 @@ This is experiment about handling MQTT mesage from clients. Main goal is all mes
 
 
 ## Todo:
-- [ ] Auth and Publish feature
-- [ ] MQTT 3.1.1 support
+- [X] Auth and Publish feature
+- [X] MQTT 3.1.1 support
 - [ ] Full WebHook support for above feature
 - [ ] Stabilty for production..
 - [ ] SubScription support
