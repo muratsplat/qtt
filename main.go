@@ -41,7 +41,6 @@ func handleConnection(conn net.Conn) {
 				break
 			}
 
-			panic(err)
 		}
 
 		switch v := packet.(type) {
@@ -60,6 +59,9 @@ func handleConnection(conn net.Conn) {
 								log.Println(err)
 							}
 							log.Printf("Client: %s is not authorized. ", v.ClientIdentifier)
+							if try >= 2 {
+								conn.Close()
+							}
 						}
 						break
 					}
@@ -85,12 +87,8 @@ func handleConnection(conn net.Conn) {
 				}
 			}
 
-			unAuth := packets.NewControlPacket(packets.Connack)
-			ackPack := unAuth.(*packets.ConnackPacket)
-			ackPack.ReturnCode = packets.ErrRefusedBadProtocolVersion
-			err := ackPack.Write(conn)
-			if err != nil {
-				log.Println(err)
+			if session.Clients.List[v.ClientIdentifier].Done {
+				return
 			}
 
 		default:

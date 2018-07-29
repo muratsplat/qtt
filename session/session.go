@@ -2,6 +2,7 @@ package session
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"sync"
@@ -15,7 +16,7 @@ type Session struct {
 	ClientID string
 	Auth     bool
 	sync.RWMutex
-	Done       chan bool
+	Done       bool
 	User, Pass string
 }
 
@@ -27,23 +28,28 @@ type Connections struct {
 
 func (s *Session) Run() {
 	for {
+
 		packet, err := packets.ReadPacket(s.Conn)
 		if err != nil {
-			panic(err)
+			if err == io.EOF {
+				log.Printf("It looks clinet %s closed the connection \n", s.ClientID)
+				s.Conn.Close()
+				s.Done = true
+				break
+			}
+		}
+
+		switch v := packet.(type) {
+		case *packets.PingreqPacket:
+			pong := packets.NewControlPacket(packets.Pingresp)
+			pong.Write(s.Conn)
+			log.Printf("Sending pong request for  (%s) the connection \n", s.ClientID)
+			_ = v
+
 		}
 
 		fmt.Println(packet.String())
-		unAuth := packets.NewControlPacket(packets.Connack)
-		ackPack := unAuth.(*packets.ConnackPacket)
-		ackPack.ReturnCode = packets.Accepted
-		err = ackPack.Write(s.Conn)
-		if err != nil {
-			log.Println(err)
-			log.Println("Connection is closing")
-			s.Conn.Close()
-		}
 
-		// }
 	}
 }
 
@@ -57,5 +63,6 @@ func NewSession(clientID string, conn net.Conn) *Session {
 		ClientID: clientID,
 		Conn:     conn,
 		Auth:     false,
+		Done:     false,
 	}
 }
