@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net"
 
 	"github.com/eclipse/paho.mqtt.golang/packets"
+	"github.com/muratsplat/qtt/session"
 )
 
 func main() {
@@ -17,7 +17,8 @@ func main() {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			// handle error
+			// Todo
+			panic(err)
 		}
 		go handleConnection(conn)
 	}
@@ -26,25 +27,30 @@ func main() {
 func handleConnection(conn net.Conn) {
 
 	for {
-
 		packet, err := packets.ReadPacket(conn)
 		if err != nil {
-			panic(err)
+
 		}
 
 		switch v := packet.(type) {
 		case *packets.ConnectPacket:
-			pass := string(v.Password)
-			user := v.Username
-			err := AuthSrv.Check(user, pass)
-			if err != nil {
+			if v.ProtocolName == "MQTT" {
+				if v.ProtocolVersion == 4 {
+					resp := packets.NewControlPacket(packets.Connack)
+					err = resp.Write(conn)
+					if err != nil {
+						panic(err)
+					}
+					session.Clients.List[v.ClientIdentifier] = session.NewSession(
+						v.ClientIdentifier,
+						conn,
+					)
+					go session.Clients.List[v.ClientIdentifier].Run()
 
+				}
 			}
 
 		}
-
-		fmt.Println(packet.String())
-
 	}
 
 }
