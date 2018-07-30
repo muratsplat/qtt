@@ -3,7 +3,7 @@
 
 This project is not completed yet. Don't use it on your production until further notice..
 
-This is experiment about handling MQTT mesage from clients. Main goal is all message forwarded by HTTP2 to another point. It is easy to deliver massive message via HTTP2 layer on any load balancer(nginx, or kubernetes).
+This is experiment about handling MQTT mesage from clients. Main goal is forwarding all message by HTTP2 to another point. It is easy to deliver massive message via HTTP2 layer on any load balancer(nginx, or kubernetes).
 
 ## Requiretments
 - Golang >= 1.8
