@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/muratsplat/qtt.svg?branch=master)](https://travis-ci.com/muratsplat/qtt)
 # Qtt is simple message broker on based webhook
 
 

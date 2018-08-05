@@ -1,0 +1,12 @@
+language: go  
+go:
+  - "1.8.x"
+  - "1.10.x"
+  - master
+
+before_install:
+  - make test
+
+script: 
+  - go vet ./...
+  - go test ./...
