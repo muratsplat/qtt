@@ -9,6 +9,9 @@ test: configure
 	go test ./...
 build: configure
 	go build -v  -o ${exec}
+docker-build: build
+	echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+	docker build -t qtt:latest . 
 clean:
 	rm -f ${exec}
 
