@@ -15,7 +15,7 @@ build-linux: configure
 docker-build: build-linux
 	docker build -t qtt:latest . 
 	docker tag qtt:latest  muod/qtt:latest
-	echo  ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+	docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
 	docker push muod/qtt:latest
 clean:
 	rm -f ${exec}
