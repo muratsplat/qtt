@@ -10,7 +10,9 @@ test: configure
 	go test ./...
 build: configure
 	go build -v  -o ${exec}
-docker-build: build
+build-linux: configure
+	GOOS=linux GOARCH=amd64 go build -v  -o ${exec}
+docker-build: build-linux
 	docker build -t qtt:latest . 
 	docker tag qtt:latest  muod/qtt:latest
 	echo  ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
