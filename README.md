@@ -19,7 +19,7 @@ $ make build
     dep ensure -vendor-only -v
     (1/2) Wrote github.com/joho/godotenv@v1.2.0
     (2/2) Wrote github.com/eclipse/paho.mqtt.golang@v1.1.1
-go build -v  -o qtt
+    go build -v  -o qtt
 ```
 `Makefile` builds application. Artifact name will be `qtt`. An than you can run like this:
 ```sh
