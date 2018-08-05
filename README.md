@@ -21,7 +21,7 @@ $ make build
     (2/2) Wrote github.com/eclipse/paho.mqtt.golang@v1.1.1
 go build -v  -o qtt
 ```
-`Makefile` builds application. Artifact name is `qtt`. An than you can run like this:
+`Makefile` builds application. Artifact name will be `qtt`. An than you can run like this:
 ```sh
 $ ./qtt
 2018/08/05 15:09:08 :1883 address is listening...
