@@ -7,9 +7,15 @@
   revision = "36d01c2b4cbeb3d2a12063e4880ce30800af9560"
   version = "v1.1.1"
 
+[[projects]]
+  name = "github.com/joho/godotenv"
+  packages = ["."]
+  revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
+  version = "v1.2.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "11b6d93e2bc459a2f3cc6d6c8ed53c894f49cdee1106cf27d3d7a6e430abc69a"
+  inputs-digest = "8ae5d266920355025d98c315a8c86941dc451997e7253c649de3bf1f9592edce"
   solver-name = "gps-cdcl"
   solver-version = 1

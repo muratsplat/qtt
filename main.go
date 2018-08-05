@@ -5,114 +5,58 @@ package main
 // - https://github.com/eclipse/paho.mqtt.golang/blob/master/packets/packets.go#L58
 
 import (
-	"io"
+	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"time"
 
-	"github.com/eclipse/paho.mqtt.golang/packets"
 	"github.com/muratsplat/qtt/auth"
-	"github.com/muratsplat/qtt/session"
+	"github.com/muratsplat/qtt/conf"
+	"github.com/muratsplat/qtt/server"
 )
 
-var shutdown = make(chan os.Signal, 1)
+var (
+	shutdown    = make(chan os.Signal, 1)
+	Listener    net.Listener
+	defaultAuth = &auth.Auth{
+		User: conf.Get().DefaultUser,
+		Pass: conf.Get().DefaultPass,
+	}
+)
 
 func init() {
 	signal.Notify(shutdown, os.Interrupt)
+	var err error
+	addr := fmt.Sprintf(":%s", conf.Get().MQTTPort)
+	Listener, err = net.Listen("tcp", addr)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("%s address is listening...\n", addr)
 }
 
 func main() {
 
-	ln, err := net.Listen("tcp", ":1883")
-	if err != nil {
-		panic(err)
-	}
-
+	var closing bool
 	go func() {
 		<-shutdown
+		closing = true
 		time.Sleep(time.Second * 5)
 		log.Println("Server is shutdown...")
-		ln.Close()
-
+		Listener.Close()
 	}()
-
 	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			// Todo
-			panic(err)
-		}
-		go handleConnection(conn)
-	}
-}
+		conn, err := Listener.Accept()
 
-func handleConnection(conn net.Conn) {
-	try := 0
-	for {
-		packet, err := packets.ReadPacket(conn)
 		if err != nil {
-			if err == io.EOF {
-				conn.Close()
+			if closing {
 				break
 			}
-
+			panic(err)
 		}
-
-		switch v := packet.(type) {
-		case *packets.ConnectPacket:
-			try++
-			if v.ProtocolName == "MQTT" || v.ProtocolName == "MQIsdp" {
-				if v.ProtocolVersion == 4 || v.ProtocolVersion == 3 {
-					err := Auth.Check(v.Username, string(v.Password))
-					if err != nil {
-						if err == auth.NotAuthErr {
-							unAuth := packets.NewControlPacket(packets.Connack)
-							ackPack := unAuth.(*packets.ConnackPacket)
-							ackPack.ReturnCode = packets.ErrRefusedNotAuthorised
-							err := ackPack.Write(conn)
-							if err != nil {
-								log.Println(err)
-							}
-							log.Printf("Client: %s is not authorized. ", v.ClientIdentifier)
-							if try >= 2 {
-								conn.Close()
-							}
-						}
-						break
-					}
-
-					session.Clients.List[v.ClientIdentifier] = session.NewSession(
-						v.ClientIdentifier,
-						conn,
-						shutdown,
-					)
-
-					ok := packets.NewControlPacket(packets.Connack)
-					ackPack := ok.(*packets.ConnackPacket)
-					ackPack.ReturnCode = packets.Accepted
-					err = ackPack.Write(conn)
-					if err != nil {
-						log.Println(err)
-						log.Println("Connection is closing")
-						conn.Close()
-					}
-
-					log.Printf("Client: %s is connected. ", v.ClientIdentifier)
-					session.Clients.List[v.ClientIdentifier].Run() // blocking
-
-				}
-			}
-
-			if session.Clients.List[v.ClientIdentifier].Done {
-				return
-			}
-
-		default:
-			panic("Not handled logic")
-		}
+		srv := server.New(conn, defaultAuth)
+		go srv.Run()
 	}
 }
-
-var Auth auth.IAuth = &auth.Auth{}
