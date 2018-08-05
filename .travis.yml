@@ -4,9 +4,5 @@ go:
   - "1.10.x"
   - master
 
-before_install:
-  - make test
-
 script: 
-  - go vet ./...
-  - go test ./...
+  - make test

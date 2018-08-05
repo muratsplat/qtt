@@ -20,7 +20,10 @@ import (
 var (
 	shutdown    = make(chan os.Signal, 1)
 	Listener    net.Listener
-	defaultAuth = &auth.Auth{conf.Get().DefaultUser, conf.Get().DefaultPass}
+	defaultAuth = &auth.Auth{
+		User: conf.Get().DefaultUser,
+		Pass: conf.Get().DefaultPass,
+	}
 )
 
 func init() {
