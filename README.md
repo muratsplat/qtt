@@ -14,11 +14,11 @@ This is experiment about handling MQTT mesage from clients. Main goal is all mes
 You can build source code via calling Makefile.
 ```sh
 $ make build
-rm -f qtt
-go get -u github.com/golang/dep/cmd/dep
-dep ensure -vendor-only -v
-(1/2) Wrote github.com/joho/godotenv@v1.2.0
-(2/2) Wrote github.com/eclipse/paho.mqtt.golang@v1.1.1
+    rm -f qtt
+    go get -u github.com/golang/dep/cmd/dep
+    dep ensure -vendor-only -v
+    (1/2) Wrote github.com/joho/godotenv@v1.2.0
+    (2/2) Wrote github.com/eclipse/paho.mqtt.golang@v1.1.1
 go build -v  -o qtt
 ```
 `Makefile` builds application. Artifact name is `qtt`. An than you can run like this:
@@ -28,6 +28,7 @@ $ ./qtt
 ```
 
 Makefile is a program building tool which runs on Unix, Linux, and their flavors. You dont know this tool, you can build offical golang tool instead of `Makefile`.
+
 ## Building via `go build`
 ```sh
 $ go get -u github.com/golang/dep/cmd/dep
