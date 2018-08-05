@@ -11,11 +11,11 @@ go:
 jobs:
   include:
     - stage: test
-      name: "Running test"   
+      name: "Run test"   
       script:
         - make test
     - stage: build
-      name: "Building docker image"
+      name: "Build docker image"
       on:
         branch: master
       script:
