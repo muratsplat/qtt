@@ -10,7 +10,7 @@ test: configure
 build: configure
 	go build -v  -o ${exec}
 docker-build: build
-	echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+	echo -n "{$DOCKER_PASSWORD}" | docker login -u "{$DOCKER_USERNAME}" --password-stdin
 	docker build -t qtt:latest . 
 	docker push muratsplat/qtt:latest
 clean:
