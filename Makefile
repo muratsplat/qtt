@@ -4,9 +4,6 @@ exec=qtt
 configure: clean
 	go get -u github.com/golang/dep/cmd/dep
 	dep ensure -vendor-only -v
-	chmod +x fixGoDep.py
-	./fixGoDep.py
-
 test: configure
 	go vet ./...
 	go test ./...
