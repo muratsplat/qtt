@@ -12,6 +12,7 @@ build: configure
 docker-build: build
 	echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 	docker build -t qtt:latest . 
+	docker push muratsplat/qtt:latest
 clean:
 	rm -f ${exec}
 
